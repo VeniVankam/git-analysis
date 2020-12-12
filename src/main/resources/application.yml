@@ -1,0 +1,27 @@
+spring:
+  datasource.url: jdbc:h2:file:~/githubRepoAnalyzer;INIT=create domain if not exists jsonb as text;MODE=PostgreSQL
+  h2.console.enabled: true
+  h2.console.path: /h2-console
+  jackson:
+    serialization.write_dates_as_timestamps: false
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: 1f3bfdfac2429242b364
+            clientSecret: f2c1c12220646ec1f466af1d008988b339927cd8
+            redirectUri: "{baseUrl}/oauth2/callback/{registrationId}"
+            scope:
+            - user:email
+            - read:user
+auth:
+    tokenSecret: Fj3EHPbt5py9DTqrnzVIK73l3W7KRDMersFNbxzrmsY
+    tokenExpiresInMilliSecs: 864000000
+
+github:
+  ribbon:
+    listOfServers: https://api.github.com/
+
+ribbon:
+  ReadTimeout: 3000

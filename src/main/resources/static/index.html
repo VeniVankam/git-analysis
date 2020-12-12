@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Github repo analysis</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"
+            integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-social/5.1.1/bootstrap-social.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Baloo+2|Frank+Ruhl+Libre&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+</head>
+<body ng-app="github-analysis-app" ng-controller="authentication as vm">
+<div class="container" ng-if="!isAuthenticated">
+    <div class="row auth-card">
+        <div class="card" style="width: 30rem;">
+            <div class="card-body">
+                <h5 class="card-title">Welcome to Public Github Repositories analyzer</h5>
+                <p class="card-text">We want you to login with your github profile, your information is safe with us
+                    :)</p>
+                <a class="btn btn-block btn-social btn-light" ng-click="signIn()">
+                    <span class="fa fa-github"></span> Sign in with Github
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container" ng-controller="currentSessionCtrl" ng-if="isAuthenticated">
+    <div class="row">
+        <div class="col-md-6 img">
+            <img ng-src="{{data.image}}" alt="" class="img-rounded">
+        </div>
+        <div class="col-md-6 details">
+            <blockquote>
+                <h5>{{data.name}}</h5>
+            </blockquote>
+            <p>
+                <b>Github Username:</b> {{data.loginId}}
+            </p>
+            <p ng-if="data.email" style="margin-top: 10px;">
+                <b>Email:</b> {{data.email}}
+            </p>
+
+            <p ng-if="data.location" style="margin-top: 10px;">
+                <b>Location:</b> {{data.location}}
+            </p>
+            <button type="button" class="btn btn-danger" ng-click="logOut()">Logout</button>
+        </div>
+    </div>
+</div>
+<div class="container analysis-form card card-body bg-light" ng-controller="analyzeCntrl as ac" ng-if="isAuthenticated"
+     id="mainContainer">
+    <form ng-submit="analyze(); vm.analyzed=true;" ng-show="!vm.analyzed">
+        <div class="row">
+            <div class="form-group col-md-5">
+                <label for="ownerName">Owner:</label>
+                <input type="text" class="form-control" id="ownerName" name="ownerName" ng-model="formData.ownerName"
+                       placeholder="Owner github user name" required>
+            </div>
+            <div class="form-group col-md-5">
+                <label for="repositoryName">Repository Name</label>
+                <input type="text" class="form-control" id="repositoryName"
+                       placeholder="Repository name of the above owner" name="repositoryName"
+                       ng-model="formData.repositoryName" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary" style="margin: 30px;">Analyze</button>
+            </div>
+        </div>
+    </form>
+    <div ng-if="vm.analyzed">
+        <p><a href="#" ng-click="analyzeAgain(); vm.analyzed=false;">&lt Analyze again</a></p>
+        <div class="alert alert-danger" role="alert" ng-show="errorMessage">
+            {{errorMessage}}
+        </div>
+        <div ng-show="!errorMessage">
+            <h4>Current Search - </h4>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Owner name</th>
+                    <th scope="col">Repository name</th>
+                    <th scope="col">Repository Url</th>
+                    <th scope="col">Commits</th>
+                    <th scope="col">Open Pulls</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>{{analyzedData.ownerName}}</td>
+                    <td>{{analyzedData.repositoryName}}</td>
+                    <td><a ng-href="{{analyzedData.response.repositoryUrl}}">{{analyzedData.response.repositoryUrl}}</a>
+                    </td>
+                    <td>{{analyzedData.response.commitsCount}}</td>
+                    <td>{{analyzedData.response.openPullRequestCount}}</td>
+                    <td><a href="#" ng-click="showAlert(analyzedData.response)" flex="100" flex-gt-md="auto">show
+                        readme</a></td>
+                </tr>
+                </tbody>
+            </table>
+            <h4>Past search History for {{analyzedData.ownerName}}'s {{analyzedData.repositoryName}} repository - </h4>
+            <p><b>Total past history - </b> {{history.totalEntityCount}} (Showing only recent 50)</p>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Commits</th>
+                    <th scope="col">Open Pulls</th>
+                    <th scope="col">Searched on</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="entity in history.entities">
+                    <td>{{entity.response.commitsCount}}</td>
+                    <td>{{entity.response.openPullRequestCount}}</td>
+                    <td>{{entity.searchedOn | date:'yyyy-MM-dd HH:mm:ss'}}</td>
+                    <td><a href="#" ng-click="showAlert(entity.response)" flex="100" flex-gt-md="auto">show readme</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="js/app.js"></script>
+</body>
+</html>
